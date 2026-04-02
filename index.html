@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Info Melaut</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#F0F4F8;color:#1a1a1a;min-height:100vh;padding-bottom:80px}
+
+  /* ── NAV ── */
+  .nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;
+       display:flex;justify-content:space-around;padding:8px 0 10px;z-index:100}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+            font-size:10px;color:#888;transition:.2s}
+  .nav-item.active{color:#2E7D32}
+  .nav-item svg{width:22px;height:22px}
+
+  /* ── PAGES ── */
+  .page{display:none;animation:fadeIn .25s ease}
+  .page.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── HERO ── */
+  .hero{background:linear-gradient(135deg,#2E7D32,#43A047);padding:28px 20px 24px;color:#fff;margin-bottom:16px}
+  .hero-badge{font-size:11px;opacity:.85;margin-bottom:6px}
+  .hero h1{font-size:28px;font-weight:800;letter-spacing:1px;margin-bottom:8px}
+  .hero p{font-size:13px;opacity:.9;line-height:1.5;margin-bottom:14px}
+  .hero-pill{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+             border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600}
+
+  /* ── CARDS GRID ── */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 16px}
+  .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .card-icon{font-size:24px;margin-bottom:6px}
+  .card-val{font-size:24px;font-weight:700;color:#1a1a1a}
+  .card-label{font-size:11px;color:#888;margin-top:2px}
+
+  /* ── SECTION ── */
+  .section{background:#fff;border-radius:14px;margin:0 16px 16px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .section-title{font-size:15px;font-weight:700;margin-bottom:4px}
+  .section-sub{font-size:11px;color:#888;margin-bottom:14px}
+
+  /* ── BAR CHART ── */
+  .bar-chart{display:flex;align-items:flex-end;justify-content:center;gap:24px;height:160px;margin-top:8px}
+  .bar-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+  .bar{width:100%;max-width:60px;border-radius:8px 8px 0 0;transition:height .6s ease;min-height:4px}
+  .bar-label{font-size:11px;font-weight:600;color:#555}
+  .bar-val{font-size:11px;color:#888}
+  .bar.cerah{background:#F9A825}
+  .bar.berawan{background:#1565C0}
+  .bar.hujan{background:#C62828}
+
+  /* ── TOP IKAN LIST ── */
+  .cuaca-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .ctab{padding:5px 14px;border-radius:20px;border:1.5px solid #ddd;font-size:12px;font-weight:600;
+        cursor:pointer;transition:.2s;background:#f5f5f5}
+  .ctab.active.cerah{background:#FFF8E1;border-color:#F9A825;color:#E65100}
+  .ctab.active.berawan{background:#E3F2FD;border-color:#1565C0;color:#1565C0}
+  .ctab.active.hujan{background:#FFEBEE;border-color:#C62828;color:#C62828}
+  .fish-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+  .fish-row:last-child{border-bottom:none}
+  .fish-rank{width:22px;font-size:12px;font-weight:700;color:#aaa}
+  .fish-name{flex:1;font-size:13px;font-weight:600}
+  .fish-bar-wrap{width:120px;margin:0 10px}
+  .fish-bar-bg{background:#f0f0f0;border-radius:4px;height:6px}
+  .fish-bar-fill{height:6px;border-radius:4px;transition:width .5s}
+  .fish-kg{font-size:12px;color:#555;width:58px;text-align:right}
+
+  /* ── PAGE HEADER ── */
+  .page-header{padding:24px 20px 16px;background:#fff;margin-bottom:12px;border-bottom:1px solid #eee}
+  .page-header h2{font-size:20px;font-weight:800}
+  .page-header p{font-size:12px;color:#888;margin-top:3px}
+
+  /* ── JENIS IKAN PAGE ── */
+  .ikan-card{background:#fff;border-radius:14px;padding:16px;margin:0 16px 12px;
+             box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px;cursor:pointer}
+  .ikan-avatar{width:52px;height:52px;border-radius:50%;background:#1565C0;
+               display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .ikan-info{flex:1}
+  .ikan-name{font-size:15px;font-weight:700}
+  .ikan-best{font-size:12px;margin-top:2px}
+  .ikan-berat{font-size:11px;color:#888;margin-top:2px}
+  .badge-cuaca{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;margin-left:4px}
+  .badge-cuaca.cerah{background:#FFF8E1;color:#E65100}
+  .badge-cuaca.berawan{background:#E3F2FD;color:#1565C0}
+  .badge-cuaca.hujan{background:#FFEBEE;color:#C62828}
+
+  /* ── IKAN DETAIL MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end}
+  .modal-overlay.open{display:flex}
+  .modal-sheet{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;
+               max-height:80vh;overflow-y:auto;animation:slideUp .3s ease}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .modal-drag{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 18px}
+  .modal-title{font-size:20px;font-weight:800;margin-bottom:4px}
+  .modal-sub{font-size:12px;color:#888;margin-bottom:18px}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stat-box{background:#f7f7f7;border-radius:10px;padding:12px}
+  .stat-box-label{font-size:10px;color:#888;margin-bottom:4px}
+  .stat-box-val{font-size:18px;font-weight:700}
+  .cuaca-breakdown{margin-top:4px}
+  .cb-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+  .cb-row:last-child{border-bottom:none}
+  .cb-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .cb-label{flex:1;font-size:12px;font-weight:600}
+  .cb-kg{font-size:12px;color:#555}
+  .cb-bar-wrap{width:80px}
+  .cb-bar{height:5px;border-radius:3px}
+
+  /* ── KAPAL PAGE ── */
+  .kapal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}
+  .kapal-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);
+              cursor:pointer;transition:.15s;border:2px solid transparent}
+  .kapal-card:active{transform:scale(.97)}
+  .kapal-initial{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1565C0,#42A5F5);
+                 color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  .kapal-name{font-size:14px;font-weight:700;margin-bottom:6px}
+  .kapal-stat{font-size:11px;color:#888;margin-bottom:2px}
+  .kapal-stat span{font-weight:600;color:#333}
+
+  /* ── KAPAL DETAIL PAGE ── */
+  #page-kapal-detail{padding-bottom:80px}
+  .detail-header{background:linear-gradient(135deg,#1565C0,#42A5F5);padding:24px 20px 20px;color:#fff;margin-bottom:16px}
+  .detail-header .back-btn{background:rgba(255,255,255,.2);border:none;border-radius:8px;color:#fff;
+                           padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px}
+  .detail-header h2{font-size:24px;font-weight:800;margin-bottom:4px}
+  .detail-header p{font-size:12px;opacity:.85}
+  .detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px;margin-bottom:16px}
+  .ds-box{background:#fff;border-radius:12px;padding:12px 10px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .ds-val{font-size:20px;font-weight:800;color:#1565C0}
+  .ds-label{font-size:10px;color:#888;margin-top:2px}
+  .cuaca-pills{display:flex;gap:8px;padding:0 16px;margin-bottom:16px;flex-wrap:wrap}
+  .cpill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+  .cpill.cerah{background:#FFF8E1;color:#E65100}
+  .cpill.berawan{background:#E3F2FD;color:#1565C0}
+  .cpill.hujan{background:#FFEBEE;color:#C62828}
+
+  .trip-table-wrap{padding:0 16px;margin-bottom:16px;overflow-x:auto}
+  .trip-table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+  .trip-table th{background:#37474F;color:#fff;padding:9px 10px;text-align:left;font-size:11px}
+  .trip-table th:first-child{border-radius:8px 0 0 0}
+  .trip-table th:last-child{border-radius:0 8px 0 0}
+  .trip-table td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+  .trip-table tr.cerah td{background:#FFFDE7}
+  .trip-table tr.berawan td{background:#E3F2FD}
+  .trip-table tr.hujan td{background:#FFEBEE}
+  .trip-table tr:hover td{filter:brightness(.97)}
+  .ikan-chips{display:flex;flex-wrap:wrap;gap:3px}
+  .ichip{background:#e0e0e0;border-radius:6px;padding:2px 6px;font-size:10px}
+
+  /* ── TOP IKAN BAR ── */
+  .top-ikan-section{padding:0 16px;margin-bottom:16px}
+  .ti-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .ti-name{width:70px;font-size:12px;font-weight:600}
+  .ti-bar-bg{flex:1;background:#f0f0f0;border-radius:4px;height:8px}
+  .ti-bar-fill{height:8px;border-radius:4px;background:linear-gradient(90deg,#1565C0,#42A5F5)}
+  .ti-kg{font-size:11px;color:#666;width:50px;text-align:right}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ PAGE: BERANDA ═══ -->
+<div class="page active" id="page-beranda">
+  <div class="hero">
+    <div class="hero-badge">🎣 Berdasarkan data historis tangkapan</div>
+    <h1>AMAN MELAUT</h1>
+    <p>Cuaca cerah terbukti menghasilkan tangkapan paling banyak. Ini saat terbaik untuk pergi melaut!</p>
+    <div class="hero-pill">☀️ Terbaik saat Cerah · rata-rata 145 kg/trip</div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-icon">🚢</div><div class="card-val">200</div><div class="card-label">Total trip tercatat</div></div>
+    <div class="card"><div class="card-icon">🐟</div><div class="card-val">22.380</div><div class="card-label">Total kg ditangkap</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hasil tangkapan rata-rata per cuaca</div>
+    <div class="section-sub">Semakin tinggi batangnya, semakin banyak hasil tangkapannya</div>
+    <div class="bar-chart" id="bar-chart"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Ikan terbanyak berdasarkan cuaca</div>
+    <div class="section-sub">5 ikan yang paling banyak ditangkap di setiap kondisi cuaca</div>
+    <div class="cuaca-tabs">
+      <div class="ctab active cerah" onclick="switchTab('cerah')">☀️ Cerah</div>
+      <div class="ctab berawan" onclick="switchTab('berawan')">⛅ Berawan</div>
+      <div class="ctab hujan" onclick="switchTab('hujan')">🌧 Hujan</div>
+    </div>
+    <div id="fish-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PAGE: IKAN ═══════ -->
+<div class="page" id="page-ikan">
+  <div class="page-header">
+    <h2>🐠 Jenis Ikan</h2>
+    <p>Kondisi terbaik untuk setiap ikan berdasarkan data</p>
+  </div>
+  <div id="ikan-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PAGE: KAPAL ══════ -->
+<div class="page" id="page-kapal">
+  <div class="page-header">
+    <h2>🚢 Performa Kapal</h2>
+    <p>Pilih kapal untuk melihat detail performanya</p>
+  </div>
+  <div class="kapal-grid" id="kapal-grid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PAGE: KAPAL DETAIL -->
+<div class="page" id="page-kapal-detail">
+  <div class="detail-header" id="detail-header">
+    <button class="back-btn" onclick="backToKapal()">← Kembali</button>
+    <h2 id="detail-kapal-name"></h2>
+    <p id="detail-kapal-sub"></p>
+  </div>
+  <div class="detail-stats" id="detail-stats"></div>
+  <div class="section" style="margin-bottom:16px">
+    <div class="section-title">Distribusi Cuaca</div>
+    <div class="section-sub">Berapa kali berlayar di setiap kondisi</div>
+    <div class="cuaca-pills" id="detail-cuaca-pills" style="padding:0;margin-top:8px"></div>
+  </div>
+  <div class="section" style="margin-bottom:16px">
+    <div class="section-title">Top Ikan Tangkapan</div>
+    <div class="section-sub">3 ikan terbanyak untuk kapal ini</div>
+    <div class="top-ikan-section" id="detail-top-ikan" style="padding:0;margin-top:8px"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Riwayat Trip</div>
+    <div class="section-sub">Semua trip yang tercatat</div>
+    <div class="trip-table-wrap" style="padding:0;margin-top:8px"><table class="trip-table" id="trip-table">
+      <thead><tr><th>Tanggal</th><th>Durasi</th><th>Total kg</th><th>Cuaca</th><th>Ikan</th></tr></thead>
+      <tbody id="trip-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MODAL IKAN ═══════ -->
+<div class="modal-overlay" id="ikan-modal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title" id="modal-ikan-name"></div>
+    <div class="modal-sub">Detail berdasarkan data historis</div>
+    <div class="stat-grid" id="modal-stat-grid"></div>
+    <div class="section-title" style="margin-bottom:10px">Performa per Cuaca</div>
+    <div class="cuaca-breakdown" id="modal-cuaca-breakdown"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ BOTTOM NAV ═══════ -->
+<nav class="nav">
+  <div class="nav-item active" onclick="showPage('beranda',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Beranda
+  </div>
+  <div class="nav-item" onclick="showPage('ikan',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16.5c0 2.5-4.5 4.5-9 4.5s-9-2-9-4.5"/><ellipse cx="12" cy="16" rx="9" ry="3"/><path d="M3 8c0-2.5 4.5-4.5 9-4.5s9 2 9 4.5c0 1.5-1.5 2.8-4 3.7"/><path d="M3 12c0 1.5 1.5 2.8 4 3.7"/></svg>
+    Ikan
+  </div>
+  <div class="nav-item" onclick="showPage('kapal',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M12 20v-6"/><rect x="9" y="14" width="6" height="6"/></svg>
+    Kapal
+  </div>
+</nav>
+
+<script>
+const DATA = {"total_trips": 200, "total_kg": 22380, "avg_cuaca": {"berawan": 109.9, "cerah": 144.8, "hujan": 64.0}, "ikan_info": {"tongkol": {"best_cuaca": "cerah", "avg_min": 10, "avg_max": 79, "avg_mean": 43.5, "total_kg": 2900}, "layang": {"best_cuaca": "cerah", "avg_min": 10, "avg_max": 74, "avg_mean": 38.5, "total_kg": 2750}, "kakap": {"best_cuaca": "cerah", "avg_min": 10, "avg_max": 76, "avg_mean": 40.2, "total_kg": 3130}, "tenggiri": {"best_cuaca": "cerah", "avg_min": 10, "avg_max": 78, "avg_mean": 38.4, "total_kg": 2402}, "cakalang": {"best_cuaca": "cerah", "avg_min": 10, "avg_max": 80, "avg_mean": 45.5, "total_kg": 3113}, "kerapu": {"best_cuaca": "cerah", "avg_min": 12, "avg_max": 80, "avg_mean": 41.6, "total_kg": 2425}, "kembung": {"best_cuaca": "cerah", "avg_min": 11, "avg_max": 77, "avg_mean": 45.3, "total_kg": 2784}, "tuna": {"best_cuaca": "cerah", "avg_min": 19, "avg_max": 77, "avg_mean": 45.2, "total_kg": 2876}}, "kapal_stats": {"Kapal A": {"total_trips": 54, "total_durasi": 137, "avg_kg": 113.0, "total_kg": 6103, "cuaca_dist": {"cerah": 22, "berawan": 18, "hujan": 14}, "top_ikan": {"layang": 909, "kakap": 838, "kembung": 835}, "trips": [{"tanggal": "2026-01-02", "durasi": 4, "total_kg": 135, "cuaca": "cerah", "ikan": [["tenggiri", 37], ["kakap", 29], ["tongkol", 69]]}, {"tanggal": "2026-01-02", "durasi": 1, "total_kg": 147, "cuaca": "berawan", "ikan": [["cakalang", 45], ["layang", 35], ["kembung", 42], ["kerapu", 25]]}, {"tanggal": "2026-01-03", "durasi": 4, "total_kg": 125, "cuaca": "cerah", "ikan": [["tuna", 32], ["cakalang", 14], ["kakap", 61], ["tongkol", 18]]}, {"tanggal": "2026-01-04", "durasi": 2, "total_kg": 186, "cuaca": "berawan", "ikan": [["kakap", 50], ["tuna", 15], ["tenggiri", 48], ["kembung", 40], ["cakalang", 33]]}, {"tanggal": "2026-01-04", "durasi": 4, "total_kg": 76, "cuaca": "cerah", "ikan": [["kakap", 19], ["layang", 12], ["kembung", 13], ["cakalang", 32]]}, {"tanggal": "2026-01-04", "durasi": 4, "total_kg": 152, "cuaca": "berawan", "ikan": [["tuna", 41], ["tenggiri", 22], ["layang", 27], ["cakalang", 37], ["tongkol", 25]]}, {"tanggal": "2026-01-05", "durasi": 3, "total_kg": 114, "cuaca": "berawan", "ikan": [["tenggiri", 12], ["kakap", 8], ["cakalang", 49], ["kerapu", 36], ["kembung", 9]]}, {"tanggal": "2026-01-05", "durasi": 1, "total_kg": 83, "cuaca": "cerah", "ikan": [["kerapu", 12], ["layang", 54], ["cakalang", 17]]}, {"tanggal": "2026-01-06", "durasi": 2, "total_kg": 191, "cuaca": "berawan", "ikan": [["layang", 41], ["kembung", 54], ["tuna", 51], ["tongkol", 45]]}, {"tanggal": "2026-01-06", "durasi": 2, "total_kg": 112, "cuaca": "cerah", "ikan": [["tongkol", 10], ["layang", 33], ["kembung", 69]]}, {"tanggal": "2026-01-07", "durasi": 2, "total_kg": 182, "cuaca": "cerah", "ikan": [["tuna", 77], ["cakalang", 50], ["kembung", 11], ["tenggiri", 15], ["kakap", 29]]}, {"tanggal": "2026-01-08", "durasi": 3, "total_kg": 97, "cuaca": "berawan", "ikan": [["layang", 46], ["kembung", 37], ["kerapu", 14]]}, {"tanggal": "2026-01-08", "durasi": 2, "total_kg": 99, "cuaca": "hujan", "ikan": [["kembung", 27], ["kakap", 21], ["kerapu", 29], ["tenggiri", 5], ["layang", 17]]}, {"tanggal": "2026-01-09", "durasi": 1, "total_kg": 129, "cuaca": "berawan", "ikan": [["tongkol", 8], ["cakalang", 33], ["tenggiri", 14], ["kembung", 45], ["tuna", 29]]}, {"tanggal": "2026-01-09", "durasi": 3, "total_kg": 67, "cuaca": "cerah", "ikan": [["kakap", 57], ["tenggiri", 10]]}, {"tanggal": "2026-01-10", "durasi": 3, "total_kg": 119, "cuaca": "cerah", "ikan": [["tenggiri", 58], ["layang", 61]]}, {"tanggal": "2026-01-10", "durasi": 4, "total_kg": 87, "cuaca": "hujan", "ikan": [["kakap", 6], ["tuna", 16], ["cakalang", 23], ["kembung", 31], ["tenggiri", 11]]}, {"tanggal": "2026-01-11", "durasi": 1, "total_kg": 63, "cuaca": "berawan", "ikan": [["layang", 22], ["tenggiri", 41]]}, {"tanggal": "2026-01-12", "durasi": 3, "total_kg": 47, "cuaca": "cerah", "ikan": [["layang", 33], ["tenggiri", 14]]}, {"tanggal": "2026-01-14", "durasi": 4, "total_kg": 124, "cuaca": "berawan", "ikan": [["layang", 20], ["kakap", 38], ["tongkol", 36], ["cakalang", 30]]}, {"tanggal": "2026-01-16", "durasi": 2, "total_kg": 185, "cuaca": "cerah", "ikan": [["kembung", 62], ["cakalang", 15], ["layang", 73], ["kakap", 35]]}, {"tanggal": "2026-01-16", "durasi": 2, "total_kg": 41, "cuaca": "berawan", "ikan": [["cakalang", 23], ["kakap", 18]]}, {"tanggal": "2026-01-16", "durasi": 2, "total_kg": 242, "cuaca": "cerah", "ikan": [["tongkol", 32], ["kembung", 35], ["tenggiri", 73], ["cakalang", 53], ["kakap", 49]]}, {"tanggal": "2026-01-17", "durasi": 2, "total_kg": 90, "cuaca": "cerah", "ikan": [["tuna", 23], ["kakap", 67]]}, {"tanggal": "2026-01-17", "durasi": 4, "total_kg": 53, "cuaca": "hujan", "ikan": [["kakap", 20], ["tenggiri", 10], ["kerapu", 23]]}, {"tanggal": "2026-01-18", "durasi": 2, "total_kg": 142, "cuaca": "berawan", "ikan": [["kakap", 41], ["tenggiri", 49], ["cakalang", 52]]}, {"tanggal": "2026-01-18", "durasi": 2, "total_kg": 38, "cuaca": "cerah", "ikan": [["layang", 18], ["tuna", 20]]}, {"tanggal": "2026-01-19", "durasi": 3, "total_kg": 65, "cuaca": "hujan", "ikan": [["tenggiri", 6], ["layang", 26], ["tongkol", 26], ["cakalang", 7]]}, {"tanggal": "2026-01-19", "durasi": 3, "total_kg": 102, "cuaca": "berawan", "ikan": [["kerapu", 37], ["kembung", 35], ["tuna", 30]]}, {"tanggal": "2026-01-19", "durasi": 2, "total_kg": 165, "cuaca": "cerah", "ikan": [["tenggiri", 19], ["kakap", 29], ["tuna", 76], ["kerapu", 41]]}, {"tanggal": "2026-01-19", "durasi": 2, "total_kg": 127, "cuaca": "berawan", "ikan": [["tongkol", 47], ["kerapu", 11], ["kembung", 38], ["tuna", 10], ["cakalang", 21]]}, {"tanggal": "2026-01-20", "durasi": 4, "total_kg": 92, "cuaca": "berawan", "ikan": [["tongkol", 53], ["tenggiri", 13], ["tuna", 26]]}, {"tanggal": "2026-01-21", "durasi": 3, "total_kg": 46, "cuaca": "hujan", "ikan": [["cakalang", 5], ["tuna", 9], ["tenggiri", 8], ["layang", 24]]}, {"tanggal": "2026-01-21", "durasi": 4, "total_kg": 128, "cuaca": "cerah", "ikan": [["tongkol", 66], ["kerapu", 62]]}, {"tanggal": "2026-01-21", "durasi": 2, "total_kg": 49, "cuaca": "hujan", "ikan": [["layang", 21], ["tuna", 16], ["kembung", 12]]}, {"tanggal": "2026-01-22", "durasi": 3, "total_kg": 92, "cuaca": "hujan", "ikan": [["tongkol", 30], ["kerapu", 32], ["layang", 5], ["tuna", 9], ["tenggiri", 16]]}, {"tanggal": "2026-01-22", "durasi": 2, "total_kg": 97, "cuaca": "hujan", "ikan": [["kakap", 26], ["tongkol", 7], ["layang", 29], ["tenggiri", 35]]}, {"tanggal": "2026-01-23", "durasi": 1, "total_kg": 218, "cuaca": "cerah", "ikan": [["tuna", 77], ["tongkol", 68], ["layang", 73]]}, {"tanggal": "2026-01-23", "durasi": 2, "total_kg": 52, "cuaca": "hujan", "ikan": [["cakalang", 20], ["kerapu", 21], ["kakap", 11]]}, {"tanggal": "2026-01-24", "durasi": 2, "total_kg": 51, "cuaca": "hujan", "ikan": [["kerapu", 14], ["tenggiri", 32], ["tongkol", 5]]}, {"tanggal": "2026-01-24", "durasi": 1, "total_kg": 182, "cuaca": "berawan", "ikan": [["tenggiri", 52], ["layang", 39], ["kerapu", 32], ["kakap", 41], ["tuna", 18]]}, {"tanggal": "2026-01-24", "durasi": 3, "total_kg": 63, "cuaca": "hujan", "ikan": [["kembung", 7], ["tuna", 12], ["tongkol", 22], ["tenggiri", 22]]}, {"tanggal": "2026-01-25", "durasi": 3, "total_kg": 117, "cuaca": "cerah", "ikan": [["tongkol", 60], ["kembung", 57]]}, {"tanggal": "2026-01-25", "durasi": 2, "total_kg": 38, "cuaca": "hujan", "ikan": [["tuna", 20], ["kakap", 18]]}, {"tanggal": "2026-01-25", "durasi": 4, "total_kg": 49, "cuaca": "hujan", "ikan": [["kerapu", 5], ["tenggiri", 19], ["kakap", 25]]}, {"tanggal": "2026-01-27", "durasi": 4, "total_kg": 135, "cuaca": "berawan", "ikan": [["kerapu", 7], ["cakalang", 17], ["layang", 47], ["tuna", 40], ["kembung", 24]]}, {"tanggal": "2026-01-27", "durasi": 2, "total_kg": 127, "cuaca": "cerah", "ikan": [["kembung", 33], ["tuna", 65], ["kerapu", 29]]}, {"tanggal": "2026-01-28", "durasi": 3, "total_kg": 31, "cuaca": "hujan", "ikan": [["tongkol", 22], ["tuna", 9]]}, {"tanggal": "2026-01-28", "durasi": 1, "total_kg": 134, "cuaca": "berawan", "ikan": [["layang", 41], ["cakalang", 14], ["kembung", 19], ["kakap", 46], ["kerapu", 14]]}, {"tanggal": "2026-01-29", "durasi": 3, "total_kg": 318, "cuaca": "cerah", "ikan": [["cakalang", 71], ["kerapu", 70], ["tuna", 59], ["tongkol", 51], ["layang", 67]]}, {"tanggal": "2026-01-30", "durasi": 2, "total_kg": 111, "cuaca": "cerah", "ikan": [["layang", 33], ["tongkol", 78]]}, {"tanggal": "2026-01-30", "durasi": 2, "total_kg": 215, "cuaca": "cerah", "ikan": [["layang", 12], ["kerapu", 32], ["kembung", 76], ["kakap", 66], ["cakalang", 29]]}, {"tanggal": "2026-01-30", "durasi": 2, "total_kg": 101, "cuaca": "cerah", "ikan": [["kakap", 19], ["tongkol", 40], ["kembung", 42]]}, {"tanggal": "2026-01-30", "durasi": 3, "total_kg": 72, "cuaca": "berawan", "ikan": [["cakalang", 46], ["kakap", 9], ["kembung", 17]]}]}, "Kapal B": {"total_trips": 46, "total_durasi": 121, "avg_kg": 123.7, "total_kg": 5689, "cuaca_dist": {"cerah": 21, "berawan": 15, "hujan": 10}, "top_ikan": {"cakalang": 888, "tenggiri": 759, "kerapu": 736}, "trips": [{"tanggal": "2026-01-01", "durasi": 3, "total_kg": 128, "cuaca": "cerah", "ikan": [["tuna", 70], ["cakalang", 58]]}, {"tanggal": "2026-01-02", "durasi": 3, "total_kg": 101, "cuaca": "berawan", "ikan": [["kembung", 6], ["tenggiri", 11], ["cakalang", 34], ["kakap", 50]]}, {"tanggal": "2026-01-02", "durasi": 3, "total_kg": 85, "cuaca": "berawan", "ikan": [["kerapu", 43], ["tenggiri", 42]]}, {"tanggal": "2026-01-03", "durasi": 3, "total_kg": 76, "cuaca": "cerah", "ikan": [["cakalang", 61], ["kerapu", 15]]}, {"tanggal": "2026-01-03", "durasi": 4, "total_kg": 98, "cuaca": "hujan", "ikan": [["kembung", 17], ["cakalang", 27], ["kerapu", 17], ["tenggiri", 14], ["tongkol", 23]]}, {"tanggal": "2026-01-03", "durasi": 2, "total_kg": 151, "cuaca": "berawan", "ikan": [["kerapu", 22], ["tongkol", 50], ["kakap", 32], ["tenggiri", 47]]}, {"tanggal": "2026-01-05", "durasi": 3, "total_kg": 64, "cuaca": "berawan", "ikan": [["cakalang", 50], ["tongkol", 14]]}, {"tanggal": "2026-01-05", "durasi": 2, "total_kg": 83, "cuaca": "cerah", "ikan": [["kerapu", 63], ["tongkol", 20]]}, {"tanggal": "2026-01-05", "durasi": 2, "total_kg": 166, "cuaca": "cerah", "ikan": [["layang", 24], ["tenggiri", 65], ["tuna", 20], ["tongkol", 57]]}, {"tanggal": "2026-01-07", "durasi": 2, "total_kg": 149, "cuaca": "berawan", "ikan": [["tuna", 37], ["kembung", 8], ["tenggiri", 43], ["kerapu", 34], ["cakalang", 27]]}, {"tanggal": "2026-01-07", "durasi": 3, "total_kg": 89, "cuaca": "cerah", "ikan": [["tenggiri", 40], ["kerapu", 12], ["kakap", 37]]}, {"tanggal": "2026-01-08", "durasi": 4, "total_kg": 139, "cuaca": "cerah", "ikan": [["tenggiri", 33], ["tongkol", 25], ["kembung", 19], ["cakalang", 62]]}, {"tanggal": "2026-01-09", "durasi": 2, "total_kg": 80, "cuaca": "berawan", "ikan": [["tenggiri", 27], ["kakap", 17], ["tongkol", 36]]}, {"tanggal": "2026-01-10", "durasi": 3, "total_kg": 178, "cuaca": "cerah", "ikan": [["kembung", 59], ["kerapu", 31], ["tenggiri", 39], ["kakap", 49]]}, {"tanggal": "2026-01-10", "durasi": 4, "total_kg": 108, "cuaca": "berawan", "ikan": [["layang", 43], ["cakalang", 51], ["kerapu", 14]]}, {"tanggal": "2026-01-10", "durasi": 3, "total_kg": 66, "cuaca": "hujan", "ikan": [["layang", 8], ["kerapu", 29], ["cakalang", 13], ["tongkol", 9], ["kembung", 7]]}, {"tanggal": "2026-01-11", "durasi": 2, "total_kg": 102, "cuaca": "hujan", "ikan": [["tongkol", 23], ["kakap", 19], ["kerapu", 31], ["cakalang", 29]]}, {"tanggal": "2026-01-11", "durasi": 2, "total_kg": 235, "cuaca": "cerah", "ikan": [["layang", 19], ["cakalang", 28], ["tenggiri", 69], ["tuna", 76], ["tongkol", 43]]}, {"tanggal": "2026-01-12", "durasi": 2, "total_kg": 101, "cuaca": "cerah", "ikan": [["kembung", 60], ["kakap", 31], ["cakalang", 10]]}, {"tanggal": "2026-01-14", "durasi": 4, "total_kg": 195, "cuaca": "cerah", "ikan": [["cakalang", 65], ["kerapu", 56], ["layang", 74]]}, {"tanggal": "2026-01-14", "durasi": 3, "total_kg": 74, "cuaca": "berawan", "ikan": [["tongkol", 16], ["tuna", 24], ["kembung", 34]]}, {"tanggal": "2026-01-15", "durasi": 4, "total_kg": 107, "cuaca": "berawan", "ikan": [["kerapu", 44], ["kakap", 15], ["cakalang", 48]]}, {"tanggal": "2026-01-15", "durasi": 1, "total_kg": 225, "cuaca": "cerah", "ikan": [["layang", 10], ["kakap", 34], ["kembung", 50], ["tuna", 72], ["cakalang", 59]]}, {"tanggal": "2026-01-16", "durasi": 3, "total_kg": 65, "cuaca": "hujan", "ikan": [["cakalang", 15], ["kembung", 10], ["kakap", 8], ["tenggiri", 7], ["kerapu", 25]]}, {"tanggal": "2026-01-18", "durasi": 1, "total_kg": 143, "cuaca": "cerah", "ikan": [["cakalang", 64], ["tongkol", 79]]}, {"tanggal": "2026-01-18", "durasi": 4, "total_kg": 126, "cuaca": "hujan", "ikan": [["layang", 27], ["tuna", 30], ["kakap", 31], ["tenggiri", 20], ["kembung", 18]]}, {"tanggal": "2026-01-19", "durasi": 1, "total_kg": 79, "cuaca": "berawan", "ikan": [["tenggiri", 43], ["tuna", 36]]}, {"tanggal": "2026-01-20", "durasi": 1, "total_kg": 151, "cuaca": "cerah", "ikan": [["kakap", 48], ["layang", 46], ["tongkol", 19], ["tenggiri", 16], ["cakalang", 22]]}, {"tanggal": "2026-01-20", "durasi": 3, "total_kg": 68, "cuaca": "hujan", "ikan": [["kembung", 8], ["layang", 5], ["kakap", 24], ["tuna", 22], ["tenggiri", 9]]}, {"tanggal": "2026-01-20", "durasi": 4, "total_kg": 65, "cuaca": "cerah", "ikan": [["tongkol", 16], ["kakap", 10], ["tuna", 20], ["kerapu", 19]]}, {"tanggal": "2026-01-21", "durasi": 4, "total_kg": 87, "cuaca": "hujan", "ikan": [["tuna", 21], ["tenggiri", 24], ["kakap", 25], ["tongkol", 17]]}, {"tanggal": "2026-01-21", "durasi": 3, "total_kg": 249, "cuaca": "cerah", "ikan": [["layang", 39], ["kakap", 71], ["kerapu", 18], ["tuna", 73], ["tongkol", 48]]}, {"tanggal": "2026-01-22", "durasi": 3, "total_kg": 222, "cuaca": "berawan", "ikan": [["kembung", 50], ["tongkol", 48], ["kakap", 49], ["kerapu", 50], ["cakalang", 25]]}, {"tanggal": "2026-01-22", "durasi": 4, "total_kg": 115, "cuaca": "hujan", "ikan": [["layang", 32], ["kakap", 27], ["cakalang", 28], ["tenggiri", 28]]}, {"tanggal": "2026-01-22", "durasi": 1, "total_kg": 81, "cuaca": "cerah", "ikan": [["tenggiri", 26], ["kembung", 55]]}, {"tanggal": "2026-01-23", "durasi": 1, "total_kg": 64, "cuaca": "berawan", "ikan": [["kembung", 49], ["tongkol", 15]]}, {"tanggal": "2026-01-24", "durasi": 4, "total_kg": 50, "cuaca": "hujan", "ikan": [["kakap", 22], ["layang", 28]]}, {"tanggal": "2026-01-24", "durasi": 4, "total_kg": 62, "cuaca": "hujan", "ikan": [["tuna", 25], ["kerapu", 6], ["tongkol", 15], ["layang", 16]]}, {"tanggal": "2026-01-25", "durasi": 4, "total_kg": 225, "cuaca": "cerah", "ikan": [["kerapu", 45], ["cakalang", 45], ["kakap", 38], ["layang", 74], ["kembung", 23]]}, {"tanggal": "2026-01-25", "durasi": 1, "total_kg": 276, "cuaca": "cerah", "ikan": [["tongkol", 72], ["tuna", 76], ["kakap", 39], ["tenggiri", 49], ["kerapu", 40]]}, {"tanggal": "2026-01-26", "durasi": 1, "total_kg": 67, "cuaca": "berawan", "ikan": [["layang", 15], ["tongkol", 8], ["cakalang", 6], ["tuna", 38]]}, {"tanggal": "2026-01-26", "durasi": 2, "total_kg": 41, "cuaca": "berawan", "ikan": [["tongkol", 27], ["layang", 14]]}, {"tanggal": "2026-01-27", "durasi": 1, "total_kg": 198, "cuaca": "cerah", "ikan": [["layang", 56], ["tuna", 47], ["cakalang", 61], ["kembung", 34]]}, {"tanggal": "2026-01-28", "durasi": 3, "total_kg": 219, "cuaca": "cerah", "ikan": [["tenggiri", 31], ["tongkol", 10], ["layang", 29], ["kerapu", 80], ["kembung", 69]]}, {"tanggal": "2026-01-29", "durasi": 2, "total_kg": 87, "cuaca": "berawan", "ikan": [["kembung", 40], ["layang", 47]]}, {"tanggal": "2026-01-29", "durasi": 2, "total_kg": 149, "cuaca": "cerah", "ikan": [["kerapu", 42], ["kakap", 31], ["tenggiri", 76]]}]}, "Kapal C": {"total_trips": 49, "total_durasi": 129, "avg_kg": 102.3, "total_kg": 5014, "cuaca_dist": {"cerah": 18, "berawan": 16, "hujan": 15}, "top_ikan": {"tongkol": 769, "layang": 762, "kakap": 670}, "trips": [{"tanggal": "2026-01-01", "durasi": 1, "total_kg": 122, "cuaca": "cerah", "ikan": [["tuna", 64], ["cakalang", 58]]}, {"tanggal": "2026-01-01", "durasi": 2, "total_kg": 53, "cuaca": "hujan", "ikan": [["tenggiri", 12], ["tongkol", 33], ["kakap", 8]]}, {"tanggal": "2026-01-01", "durasi": 3, "total_kg": 65, "cuaca": "berawan", "ikan": [["tuna", 41], ["cakalang", 24]]}, {"tanggal": "2026-01-02", "durasi": 3, "total_kg": 41, "cuaca": "berawan", "ikan": [["kerapu", 16], ["tongkol", 25]]}, {"tanggal": "2026-01-02", "durasi": 2, "total_kg": 145, "cuaca": "cerah", "ikan": [["tuna", 35], ["kembung", 56], ["kakap", 24], ["kerapu", 30]]}, {"tanggal": "2026-01-03", "durasi": 4, "total_kg": 135, "cuaca": "cerah", "ikan": [["kembung", 13], ["layang", 55], ["tongkol", 39], ["tuna", 28]]}, {"tanggal": "2026-01-04", "durasi": 1, "total_kg": 147, "cuaca": "berawan", "ikan": [["layang", 48], ["tongkol", 35], ["kembung", 20], ["cakalang", 44]]}, {"tanggal": "2026-01-04", "durasi": 4, "total_kg": 116, "cuaca": "hujan", "ikan": [["tuna", 26], ["kakap", 29], ["layang", 16], ["tongkol", 27], ["tenggiri", 18]]}, {"tanggal": "2026-01-04", "durasi": 2, "total_kg": 55, "cuaca": "berawan", "ikan": [["tenggiri", 31], ["cakalang", 17], ["kembung", 7]]}, {"tanggal": "2026-01-05", "durasi": 1, "total_kg": 119, "cuaca": "berawan", "ikan": [["tuna", 17], ["kakap", 33], ["layang", 22], ["tongkol", 16], ["kembung", 31]]}, {"tanggal": "2026-01-05", "durasi": 2, "total_kg": 172, "cuaca": "cerah", "ikan": [["kakap", 76], ["kembung", 29], ["tongkol", 67]]}, {"tanggal": "2026-01-07", "durasi": 4, "total_kg": 76, "cuaca": "cerah", "ikan": [["cakalang", 30], ["layang", 46]]}, {"tanggal": "2026-01-07", "durasi": 4, "total_kg": 133, "cuaca": "cerah", "ikan": [["tenggiri", 12], ["kerapu", 67], ["layang", 23], ["kakap", 31]]}, {"tanggal": "2026-01-08", "durasi": 3, "total_kg": 195, "cuaca": "cerah", "ikan": [["layang", 45], ["tuna", 35], ["cakalang", 80], ["tongkol", 35]]}, {"tanggal": "2026-01-08", "durasi": 3, "total_kg": 77, "cuaca": "cerah", "ikan": [["kembung", 34], ["layang", 43]]}, {"tanggal": "2026-01-09", "durasi": 4, "total_kg": 29, "cuaca": "hujan", "ikan": [["kerapu", 11], ["kembung", 18]]}, {"tanggal": "2026-01-10", "durasi": 3, "total_kg": 187, "cuaca": "cerah", "ikan": [["kerapu", 57], ["kembung", 32], ["tongkol", 25], ["kakap", 73]]}, {"tanggal": "2026-01-11", "durasi": 4, "total_kg": 124, "cuaca": "berawan", "ikan": [["layang", 42], ["cakalang", 25], ["tuna", 26], ["kerapu", 31]]}, {"tanggal": "2026-01-12", "durasi": 2, "total_kg": 52, "cuaca": "hujan", "ikan": [["kakap", 9], ["kerapu", 28], ["tongkol", 15]]}, {"tanggal": "2026-01-12", "durasi": 1, "total_kg": 87, "cuaca": "hujan", "ikan": [["cakalang", 14], ["kakap", 8], ["tongkol", 22], ["tenggiri", 19], ["kerapu", 24]]}, {"tanggal": "2026-01-12", "durasi": 4, "total_kg": 170, "cuaca": "berawan", "ikan": [["tongkol", 25], ["tuna", 25], ["layang", 49], ["cakalang", 20], ["kakap", 51]]}, {"tanggal": "2026-01-12", "durasi": 1, "total_kg": 180, "cuaca": "cerah", "ikan": [["kerapu", 20], ["kembung", 11], ["tuna", 64], ["cakalang", 21], ["tongkol", 64]]}, {"tanggal": "2026-01-13", "durasi": 1, "total_kg": 49, "cuaca": "hujan", "ikan": [["layang", 12], ["tongkol", 10], ["tuna", 27]]}, {"tanggal": "2026-01-13", "durasi": 3, "total_kg": 63, "cuaca": "hujan", "ikan": [["kembung", 28], ["tongkol", 11], ["kerapu", 24]]}, {"tanggal": "2026-01-13", "durasi": 1, "total_kg": 122, "cuaca": "cerah", "ikan": [["kembung", 68], ["tongkol", 37], ["layang", 17]]}, {"tanggal": "2026-01-13", "durasi": 3, "total_kg": 79, "cuaca": "berawan", "ikan": [["kembung", 26], ["cakalang", 16], ["tongkol", 26], ["kerapu", 11]]}, {"tanggal": "2026-01-13", "durasi": 3, "total_kg": 72, "cuaca": "cerah", "ikan": [["cakalang", 12], ["tenggiri", 17], ["layang", 29], ["kakap", 14]]}, {"tanggal": "2026-01-14", "durasi": 3, "total_kg": 63, "cuaca": "berawan", "ikan": [["kerapu", 37], ["cakalang", 26]]}, {"tanggal": "2026-01-14", "durasi": 1, "total_kg": 161, "cuaca": "berawan", "ikan": [["layang", 51], ["kakap", 17], ["cakalang", 33], ["tenggiri", 32], ["tuna", 28]]}, {"tanggal": "2026-01-14", "durasi": 2, "total_kg": 207, "cuaca": "cerah", "ikan": [["kembung", 43], ["kakap", 63], ["layang", 39], ["tenggiri", 62]]}, {"tanggal": "2026-01-15", "durasi": 3, "total_kg": 35, "cuaca": "hujan", "ikan": [["tuna", 20], ["cakalang", 15]]}, {"tanggal": "2026-01-15", "durasi": 4, "total_kg": 172, "cuaca": "cerah", "ikan": [["tuna", 31], ["kembung", 75], ["kerapu", 66]]}, {"tanggal": "2026-01-16", "durasi": 2, "total_kg": 57, "cuaca": "hujan", "ikan": [["tongkol", 26], ["cakalang", 14], ["kembung", 17]]}, {"tanggal": "2026-01-17", "durasi": 2, "total_kg": 79, "cuaca": "hujan", "ikan": [["kakap", 19], ["cakalang", 11], ["layang", 23], ["kerapu", 12], ["tongkol", 14]]}, {"tanggal": "2026-01-17", "durasi": 3, "total_kg": 166, "cuaca": "cerah", "ikan": [["layang", 14], ["tenggiri", 53], ["kembung", 64], ["kerapu", 35]]}, {"tanggal": "2026-01-17", "durasi": 1, "total_kg": 86, "cuaca": "berawan", "ikan": [["cakalang", 15], ["kakap", 9], ["tenggiri", 22], ["layang", 40]]}, {"tanggal": "2026-01-18", "durasi": 3, "total_kg": 64, "cuaca": "hujan", "ikan": [["tuna", 22], ["cakalang", 13], ["kerapu", 29]]}, {"tanggal": "2026-01-20", "durasi": 3, "total_kg": 94, "cuaca": "berawan", "ikan": [["tongkol", 52], ["tuna", 27], ["kembung", 15]]}, {"tanggal": "2026-01-20", "durasi": 4, "total_kg": 50, "cuaca": "hujan", "ikan": [["kerapu", 5], ["cakalang", 29], ["tenggiri", 16]]}, {"tanggal": "2026-01-22", "durasi": 3, "total_kg": 43, "cuaca": "hujan", "ikan": [["cakalang", 23], ["tenggiri", 8], ["tuna", 12]]}, {"tanggal": "2026-01-23", "durasi": 4, "total_kg": 91, "cuaca": "cerah", "ikan": [["kerapu", 51], ["tuna", 40]]}, {"tanggal": "2026-01-23", "durasi": 4, "total_kg": 134, "cuaca": "cerah", "ikan": [["tenggiri", 27], ["kakap", 18], ["tongkol", 18], ["layang", 31], ["tuna", 40]]}, {"tanggal": "2026-01-25", "durasi": 3, "total_kg": 108, "cuaca": "berawan", "ikan": [["kembung", 18], ["layang", 11], ["tongkol", 46], ["cakalang", 26], ["tuna", 7]]}, {"tanggal": "2026-01-26", "durasi": 1, "total_kg": 138, "cuaca": "cerah", "ikan": [["tenggiri", 37], ["kakap", 47], ["kembung", 32], ["layang", 22]]}, {"tanggal": "2026-01-26", "durasi": 3, "total_kg": 165, "cuaca": "berawan", "ikan": [["layang", 24], ["tuna", 6], ["kakap", 54], ["tongkol", 47], ["cakalang", 34]]}, {"tanggal": "2026-01-27", "durasi": 4, "total_kg": 66, "cuaca": "hujan", "ikan": [["tongkol", 32], ["kakap", 34]]}, {"tanggal": "2026-01-27", "durasi": 2, "total_kg": 96, "cuaca": "berawan", "ikan": [["layang", 32], ["tongkol", 22], ["tenggiri", 9], ["kakap", 25], ["kerapu", 8]]}, {"tanggal": "2026-01-28", "durasi": 3, "total_kg": 21, "cuaca": "berawan", "ikan": [["kakap", 14], ["tenggiri", 7]]}, {"tanggal": "2026-01-29", "durasi": 2, "total_kg": 53, "cuaca": "hujan", "ikan": [["kakap", 14], ["kembung", 6], ["layang", 28], ["kerapu", 5]]}]}, "Kapal D": {"total_trips": 51, "total_durasi": 115, "avg_kg": 109.3, "total_kg": 5574, "cuaca_dist": {"cerah": 19, "berawan": 19, "hujan": 13}, "top_ikan": {"kakap": 915, "cakalang": 889, "tuna": 788}, "trips": [{"tanggal": "2026-01-01", "durasi": 4, "total_kg": 122, "cuaca": "cerah", "ikan": [["tongkol", 21], ["layang", 42], ["kakap", 59]]}, {"tanggal": "2026-01-01", "durasi": 2, "total_kg": 117, "cuaca": "berawan", "ikan": [["tuna", 11], ["kembung", 29], ["kerapu", 43], ["layang", 34]]}, {"tanggal": "2026-01-01", "durasi": 2, "total_kg": 265, "cuaca": "cerah", "ikan": [["kembung", 52], ["kakap", 72], ["tuna", 28], ["tenggiri", 39], ["cakalang", 74]]}, {"tanggal": "2026-01-02", "durasi": 1, "total_kg": 175, "cuaca": "berawan", "ikan": [["tongkol", 45], ["tuna", 47], ["kerapu", 24], ["cakalang", 37], ["kembung", 22]]}, {"tanggal": "2026-01-03", "durasi": 4, "total_kg": 72, "cuaca": "berawan", "ikan": [["tuna", 22], ["kembung", 50]]}, {"tanggal": "2026-01-03", "durasi": 4, "total_kg": 199, "cuaca": "cerah", "ikan": [["kakap", 75], ["kerapu", 15], ["tuna", 37], ["kembung", 72]]}, {"tanggal": "2026-01-04", "durasi": 1, "total_kg": 100, "cuaca": "hujan", "ikan": [["tongkol", 23], ["tuna", 22], ["kerapu", 13], ["cakalang", 11], ["kakap", 31]]}, {"tanggal": "2026-01-06", "durasi": 4, "total_kg": 113, "cuaca": "berawan", "ikan": [["kembung", 29], ["kerapu", 12], ["tenggiri", 24], ["kakap", 15], ["tuna", 33]]}, {"tanggal": "2026-01-06", "durasi": 1, "total_kg": 26, "cuaca": "hujan", "ikan": [["kakap", 5], ["layang", 21]]}, {"tanggal": "2026-01-06", "durasi": 1, "total_kg": 103, "cuaca": "cerah", "ikan": [["kakap", 27], ["kerapu", 76]]}, {"tanggal": "2026-01-06", "durasi": 3, "total_kg": 38, "cuaca": "hujan", "ikan": [["cakalang", 15], ["tongkol", 23]]}, {"tanggal": "2026-01-06", "durasi": 2, "total_kg": 47, "cuaca": "hujan", "ikan": [["layang", 27], ["kakap", 20]]}, {"tanggal": "2026-01-07", "durasi": 4, "total_kg": 23, "cuaca": "hujan", "ikan": [["kakap", 14], ["kerapu", 9]]}, {"tanggal": "2026-01-07", "durasi": 2, "total_kg": 27, "cuaca": "hujan", "ikan": [["tongkol", 17], ["cakalang", 10]]}, {"tanggal": "2026-01-08", "durasi": 1, "total_kg": 100, "cuaca": "cerah", "ikan": [["kakap", 25], ["tuna", 28], ["cakalang", 47]]}, {"tanggal": "2026-01-08", "durasi": 3, "total_kg": 130, "cuaca": "cerah", "ikan": [["cakalang", 60], ["kembung", 14], ["kakap", 35], ["tenggiri", 21]]}, {"tanggal": "2026-01-09", "durasi": 2, "total_kg": 129, "cuaca": "berawan", "ikan": [["tongkol", 50], ["tenggiri", 43], ["kembung", 36]]}, {"tanggal": "2026-01-09", "durasi": 3, "total_kg": 55, "cuaca": "cerah", "ikan": [["kakap", 38], ["kerapu", 17]]}, {"tanggal": "2026-01-09", "durasi": 2, "total_kg": 218, "cuaca": "cerah", "ikan": [["tenggiri", 67], ["tuna", 28], ["tongkol", 17], ["kembung", 77], ["kakap", 29]]}, {"tanggal": "2026-01-10", "durasi": 2, "total_kg": 87, "cuaca": "hujan", "ikan": [["kerapu", 16], ["tenggiri", 30], ["layang", 23], ["tuna", 18]]}, {"tanggal": "2026-01-11", "durasi": 2, "total_kg": 96, "cuaca": "hujan", "ikan": [["tongkol", 17], ["kakap", 13], ["kembung", 11], ["kerapu", 27], ["cakalang", 28]]}, {"tanggal": "2026-01-11", "durasi": 1, "total_kg": 31, "cuaca": "berawan", "ikan": [["kerapu", 7], ["cakalang", 17], ["tuna", 7]]}, {"tanggal": "2026-01-11", "durasi": 1, "total_kg": 208, "cuaca": "cerah", "ikan": [["tongkol", 71], ["kembung", 74], ["cakalang", 63]]}, {"tanggal": "2026-01-12", "durasi": 4, "total_kg": 85, "cuaca": "berawan", "ikan": [["tongkol", 36], ["kakap", 21], ["tenggiri", 19], ["tuna", 9]]}, {"tanggal": "2026-01-13", "durasi": 1, "total_kg": 106, "cuaca": "cerah", "ikan": [["layang", 48], ["kakap", 34], ["cakalang", 24]]}, {"tanggal": "2026-01-13", "durasi": 1, "total_kg": 125, "cuaca": "cerah", "ikan": [["kembung", 41], ["layang", 16], ["tenggiri", 46], ["tuna", 22]]}, {"tanggal": "2026-01-14", "durasi": 4, "total_kg": 162, "cuaca": "berawan", "ikan": [["kembung", 45], ["kerapu", 7], ["layang", 39], ["cakalang", 47], ["tongkol", 24]]}, {"tanggal": "2026-01-15", "durasi": 2, "total_kg": 102, "cuaca": "berawan", "ikan": [["tuna", 49], ["tenggiri", 26], ["kerapu", 27]]}, {"tanggal": "2026-01-15", "durasi": 3, "total_kg": 168, "cuaca": "berawan", "ikan": [["tongkol", 34], ["kerapu", 56], ["layang", 27], ["tuna", 51]]}, {"tanggal": "2026-01-15", "durasi": 1, "total_kg": 153, "cuaca": "cerah", "ikan": [["kerapu", 72], ["cakalang", 25], ["tenggiri", 11], ["kembung", 30], ["kakap", 15]]}, {"tanggal": "2026-01-16", "durasi": 2, "total_kg": 125, "cuaca": "berawan", "ikan": [["kembung", 34], ["tuna", 41], ["kakap", 50]]}, {"tanggal": "2026-01-16", "durasi": 4, "total_kg": 117, "cuaca": "cerah", "ikan": [["tenggiri", 21], ["tongkol", 77], ["kerapu", 19]]}, {"tanggal": "2026-01-17", "durasi": 1, "total_kg": 82, "cuaca": "cerah", "ikan": [["tenggiri", 42], ["tongkol", 40]]}, {"tanggal": "2026-01-17", "durasi": 1, "total_kg": 26, "cuaca": "hujan", "ikan": [["tenggiri", 9], ["kerapu", 12], ["tongkol", 5]]}, {"tanggal": "2026-01-18", "durasi": 2, "total_kg": 96, "cuaca": "hujan", "ikan": [["cakalang", 27], ["tenggiri", 9], ["layang", 26], ["tuna", 5], ["kakap", 29]]}, {"tanggal": "2026-01-18", "durasi": 3, "total_kg": 186, "cuaca": "cerah", "ikan": [["tongkol", 45], ["cakalang", 78], ["kakap", 18], ["tenggiri", 26], ["tuna", 19]]}, {"tanggal": "2026-01-19", "durasi": 4, "total_kg": 108, "cuaca": "cerah", "ikan": [["tuna", 46], ["cakalang", 62]]}, {"tanggal": "2026-01-19", "durasi": 3, "total_kg": 124, "cuaca": "berawan", "ikan": [["kembung", 12], ["tuna", 15], ["layang", 37], ["kerapu", 27], ["tenggiri", 33]]}, {"tanggal": "2026-01-20", "durasi": 1, "total_kg": 150, "cuaca": "berawan", "ikan": [["tongkol", 20], ["kakap", 35], ["layang", 24], ["tuna", 22], ["cakalang", 49]]}, {"tanggal": "2026-01-21", "durasi": 2, "total_kg": 94, "cuaca": "cerah", "ikan": [["cakalang", 33], ["kakap", 35], ["tuna", 26]]}, {"tanggal": "2026-01-23", "durasi": 3, "total_kg": 104, "cuaca": "berawan", "ikan": [["kembung", 22], ["kakap", 29], ["kerapu", 10], ["tenggiri", 43]]}, {"tanggal": "2026-01-24", "durasi": 1, "total_kg": 25, "cuaca": "hujan", "ikan": [["tenggiri", 6], ["kerapu", 19]]}, {"tanggal": "2026-01-26", "durasi": 2, "total_kg": 233, "cuaca": "cerah", "ikan": [["kerapu", 57], ["tenggiri", 78], ["tuna", 35], ["cakalang", 63]]}, {"tanggal": "2026-01-26", "durasi": 2, "total_kg": 98, "cuaca": "berawan", "ikan": [["cakalang", 33], ["kakap", 50], ["layang", 8], ["tenggiri", 7]]}, {"tanggal": "2026-01-27", "durasi": 2, "total_kg": 68, "cuaca": "berawan", "ikan": [["layang", 22], ["cakalang", 22], ["tongkol", 9], ["kembung", 15]]}, {"tanggal": "2026-01-28", "durasi": 2, "total_kg": 80, "cuaca": "cerah", "ikan": [["tuna", 48], ["kakap", 32]]}, {"tanggal": "2026-01-28", "durasi": 3, "total_kg": 122, "cuaca": "berawan", "ikan": [["cakalang", 36], ["tuna", 32], ["kembung", 9], ["kakap", 17], ["tongkol", 28]]}, {"tanggal": "2026-01-29", "durasi": 3, "total_kg": 67, "cuaca": "hujan", "ikan": [["tenggiri", 12], ["cakalang", 6], ["kakap", 12], ["layang", 26], ["kerapu", 11]]}, {"tanggal": "2026-01-29", "durasi": 1, "total_kg": 113, "cuaca": "berawan", "ikan": [["layang", 16], ["kakap", 50], ["tuna", 26], ["tongkol", 21]]}, {"tanggal": "2026-01-30", "durasi": 3, "total_kg": 65, "cuaca": "hujan", "ikan": [["tenggiri", 8], ["layang", 18], ["cakalang", 22], ["tuna", 17]]}, {"tanggal": "2026-01-30", "durasi": 2, "total_kg": 109, "cuaca": "berawan", "ikan": [["layang", 19], ["kakap", 30], ["tuna", 44], ["kembung", 16]]}]}}, "ikan_cuaca_rank": {"cerah": [["kakap", 1688], ["kembung", 1584], ["cakalang", 1546], ["tuna", 1537], ["tongkol", 1437]], "berawan": [["cakalang", 1162], ["tongkol", 989], ["kembung", 983], ["layang", 982], ["tuna", 981]], "hujan": [["kakap", 528], ["kerapu", 477], ["tongkol", 474], ["layang", 458], ["tenggiri", 413]]}};
+
+// ── helpers ──────────────────────────────────────────────────────
+const fmt = n => n.toLocaleString('id-ID');
+const cuacaIcon = c => ({cerah:'☀️',berawan:'⛅',hujan:'🌧'}[c]||'');
+const cuacaColor = c => ({cerah:'#F9A825',berawan:'#1565C0',hujan:'#C62828'}[c]||'#888');
+
+// ── page switching ────────────────────────────────────────────────
+function showPage(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── BAR CHART ─────────────────────────────────────────────────────
+function buildBarChart(){
+  const ac = DATA.avg_cuaca;
+  const max = Math.max(...Object.values(ac));
+  const order = [['cerah','☀️ Cerah'],['berawan','⛅ Berawan'],['hujan','🌧 Hujan']];
+  const wrap = document.getElementById('bar-chart');
+  wrap.innerHTML = '';
+  // y-axis labels
+  const axis = document.createElement('div');
+  axis.style.cssText='display:flex;flex-direction:column;justify-content:space-between;height:160px;font-size:10px;color:#aaa;padding-right:6px;padding-top:4px;padding-bottom:20px';
+  [160,120,80,40,0].forEach(v=>{const d=document.createElement('div');d.textContent=v+' kg';axis.appendChild(d)});
+  wrap.appendChild(axis);
+  order.forEach(([key,label])=>{
+    const pct = (ac[key]/160)*100;
+    const bw = document.createElement('div');
+    bw.className='bar-wrap';
+    bw.innerHTML=`<div class="bar ${key}" style="height:${Math.min(pct,100)}%"></div>
+      <div class="bar-label">${label.split(' ')[1]}</div>
+      <div class="bar-val">${ac[key]} kg</div>`;
+    wrap.appendChild(bw);
+  });
+}
+
+// ── TOP IKAN LIST ─────────────────────────────────────────────────
+let currentTab = 'cerah';
+function switchTab(cuaca){
+  currentTab = cuaca;
+  document.querySelectorAll('.ctab').forEach(t=>{
+    t.classList.remove('active');
+    if(t.textContent.toLowerCase().includes(cuaca.substring(0,4))) t.classList.add('active');
+  });
+  buildFishList();
+}
+function buildFishList(){
+  const list = DATA.ikan_cuaca_rank[currentTab];
+  const max = list[0][1];
+  const colors = {cerah:'#F9A825',berawan:'#1565C0',hujan:'#C62828'};
+  const col = colors[currentTab];
+  document.getElementById('fish-list').innerHTML = list.map(([name,kg],i)=>`
+    <div class="fish-row">
+      <div class="fish-rank">${i+1}</div>
+      <div class="fish-name">${name.charAt(0).toUpperCase()+name.slice(1)}</div>
+      <div class="fish-bar-wrap"><div class="fish-bar-bg"><div class="fish-bar-fill" style="width:${(kg/max*100).toFixed(0)}%;background:${col}"></div></div></div>
+      <div class="fish-kg">${fmt(kg)} kg</div>
+    </div>`).join('');
+}
+
+// ── JENIS IKAN PAGE ───────────────────────────────────────────────
+const ikanEmoji = {tuna:'🐟',layang:'🐠',kakap:'🐡',tenggiri:'🦈',cakalang:'🐟',kerapu:'🐠',kembung:'🐟',tongkol:'🐟'};
+function buildIkanPage(){
+  const info = DATA.ikan_info;
+  const sorted = Object.entries(info).sort((a,b)=>b[1].total_kg-a[1].total_kg);
+  document.getElementById('ikan-list').innerHTML = sorted.map(([name,d])=>`
+    <div class="ikan-card" onclick="openIkanModal('${name}')">
+      <div class="ikan-avatar">${ikanEmoji[name]||'🐟'}</div>
+      <div class="ikan-info">
+        <div class="ikan-name">${name.charAt(0).toUpperCase()+name.slice(1)}</div>
+        <div class="ikan-best">Terbaik saat <span class="badge-cuaca ${d.best_cuaca}">${cuacaIcon(d.best_cuaca)} ${d.best_cuaca}</span></div>
+        <div class="ikan-berat">Berat rata-rata: ${d.avg_mean} kg/ekor</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`).join('');
+}
+
+function openIkanModal(name){
+  const d = DATA.ikan_info[name];
+  const ikanCuacaRaw = {};
+  ['cerah','berawan','hujan'].forEach(c=>{
+    const found = DATA.ikan_cuaca_rank[c].find(([n])=>n===name);
+    ikanCuacaRaw[c] = found ? found[1] : 0;
+  });
+  const maxKg = Math.max(...Object.values(ikanCuacaRaw));
+  document.getElementById('modal-ikan-name').textContent = name.charAt(0).toUpperCase()+name.slice(1);
+  document.getElementById('modal-stat-grid').innerHTML=`
+    <div class="stat-box"><div class="stat-box-label">Total Ditangkap</div><div class="stat-box-val">${fmt(d.total_kg)} kg</div></div>
+    <div class="stat-box"><div class="stat-box-label">Rata-rata/ekor</div><div class="stat-box-val">${d.avg_mean} kg</div></div>
+    <div class="stat-box"><div class="stat-box-label">Berat Min</div><div class="stat-box-val">${d.avg_min} kg</div></div>
+    <div class="stat-box"><div class="stat-box-label">Berat Max</div><div class="stat-box-val">${d.avg_max} kg</div></div>`;
+  document.getElementById('modal-cuaca-breakdown').innerHTML=['cerah','berawan','hujan'].map(c=>`
+    <div class="cb-row">
+      <div class="cb-dot" style="background:${cuacaColor(c)}"></div>
+      <div class="cb-label">${cuacaIcon(c)} ${c.charAt(0).toUpperCase()+c.slice(1)}</div>
+      <div class="cb-bar-wrap"><div style="background:#f0f0f0;border-radius:4px;height:5px">
+        <div class="cb-bar" style="width:${maxKg?((ikanCuacaRaw[c]/maxKg)*100).toFixed(0):0}%;background:${cuacaColor(c)}"></div></div></div>
+      <div class="cb-kg">${fmt(ikanCuacaRaw[c])} kg</div>
+    </div>`).join('');
+  document.getElementById('ikan-modal').classList.add('open');
+}
+function closeModal(e){
+  if(e.target.id==='ikan-modal') document.getElementById('ikan-modal').classList.remove('open');
+}
+
+// ── KAPAL PAGE ────────────────────────────────────────────────────
+function buildKapalPage(){
+  const ks = DATA.kapal_stats;
+  document.getElementById('kapal-grid').innerHTML = Object.entries(ks).map(([name,d])=>`
+    <div class="kapal-card" onclick="showKapalDetail('${name}')">
+      <div class="kapal-initial">${name.replace('Kapal ','')}</div>
+      <div class="kapal-name">${name}</div>
+      <div class="kapal-stat">Trip: <span>${d.total_trips}</span></div>
+      <div class="kapal-stat">Avg/trip: <span>${d.avg_kg} kg</span></div>
+      <div class="kapal-stat">Total: <span>${fmt(d.total_kg)} kg</span></div>
+      <div class="kapal-stat">Hari layar: <span>${d.total_durasi} hari</span></div>
+    </div>`).join('');
+}
+
+function showKapalDetail(name){
+  const d = DATA.kapal_stats[name];
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-kapal-detail').classList.add('active');
+
+  document.getElementById('detail-kapal-name').textContent = name;
+  document.getElementById('detail-kapal-sub').textContent = `${d.total_trips} trip · ${d.total_durasi} hari berlayar`;
+
+  document.getElementById('detail-stats').innerHTML=`
+    <div class="ds-box"><div class="ds-val">${d.total_trips}</div><div class="ds-label">Total Trip</div></div>
+    <div class="ds-box"><div class="ds-val">${d.avg_kg}</div><div class="ds-label">Avg kg/Trip</div></div>
+    <div class="ds-box"><div class="ds-val">${fmt(d.total_kg)}</div><div class="ds-label">Total kg</div></div>
+    <div class="ds-box"><div class="ds-val">${d.total_durasi}</div><div class="ds-label">Hari Layar</div></div>
+    <div class="ds-box"><div class="ds-val">${(d.total_kg/d.total_durasi).toFixed(1)}</div><div class="ds-label">kg/Hari</div></div>
+    <div class="ds-box"><div class="ds-val">${(d.total_durasi/d.total_trips).toFixed(1)}</div><div class="ds-label">Avg Durasi</div></div>`;
+
+  const cd = d.cuaca_dist;
+  document.getElementById('detail-cuaca-pills').innerHTML=`
+    <div class="cpill cerah">☀️ Cerah: ${cd.cerah||0}x</div>
+    <div class="cpill berawan">⛅ Berawan: ${cd.berawan||0}x</div>
+    <div class="cpill hujan">🌧 Hujan: ${cd.hujan||0}x</div>`;
+
+  const ti = d.top_ikan;
+  const tiMax = Math.max(...Object.values(ti));
+  document.getElementById('detail-top-ikan').innerHTML = Object.entries(ti).map(([n,kg])=>`
+    <div class="ti-row">
+      <div class="ti-name">${n.charAt(0).toUpperCase()+n.slice(1)}</div>
+      <div class="ti-bar-bg"><div class="ti-bar-fill" style="width:${((kg/tiMax)*100).toFixed(0)}%"></div></div>
+      <div class="ti-kg">${fmt(kg)} kg</div>
+    </div>`).join('');
+
+  document.getElementById('trip-tbody').innerHTML = d.trips.map(t=>`
+    <tr class="${t.cuaca}">
+      <td>${t.tanggal}</td>
+      <td>${t.durasi} hari</td>
+      <td><b>${t.total_kg} kg</b></td>
+      <td>${cuacaIcon(t.cuaca)} ${t.cuaca}</td>
+      <td><div class="ikan-chips">${t.ikan.map(([n,kg])=>`<span class="ichip">${n} ${kg}kg</span>`).join('')}</div></td>
+    </tr>`).join('');
+
+  window.scrollTo(0,0);
+}
+
+function backToKapal(){
+  document.getElementById('page-kapal-detail').classList.remove('active');
+  document.getElementById('page-kapal').classList.add('active');
+  document.querySelectorAll('.nav-item')[2].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+buildBarChart();
+buildFishList();
+buildIkanPage();
+buildKapalPage();
+</script>
+</body>
+</html>
